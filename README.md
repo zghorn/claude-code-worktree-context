@@ -15,10 +15,10 @@ or branch you're in.
 - **No more session-ID bookkeeping.** Claude tracks context per worktree,
   not per session. You don't have to remember or save anything to come
   back to a piece of work later.
-- **Switch worktrees mid-conversation, transparently.** If Claude `cd`s
-  into a different worktree to investigate something, it'll silently load
-  *that* worktree's history on the next turn. Each worktree keeps its own
-  notes; they never get jumbled.
+- **Switch worktrees mid-conversation, transparently.** If Claude touches
+  a different worktree to investigate something, it'll silently load
+  *that* worktree's history right then — same turn, before responding.
+  Each worktree keeps its own notes; they never get jumbled.
 - **`/compact` won't lose your progress.** Right before context gets
   wiped, Claude is prompted to save its working notes to disk. The next
   session reads them back in.
@@ -72,8 +72,8 @@ Five small shell scripts run at key moments in Claude's lifecycle:
 | When | What it does |
 |---|---|
 | Session starts in a worktree | Loads that worktree's existing notes into Claude's opening context |
-| Claude touches a file or runs a command | Logs the activity and marks the worktree as "active" this session |
-| Each new user turn | If Claude just touched a worktree it hadn't loaded yet, auto-loads its notes |
+| Claude touches a file or runs a command in a worktree | Logs the activity, and on first touch this session, injects that worktree's notes inline (same turn, before Claude responds) |
+| Each new user turn | Fallback: if a same-turn injection didn't go through, the next user turn auto-loads any pending worktree notes |
 | Right before `/compact` | Reminds Claude to flush its notes to disk before memory wipes |
 | Session ends | Saves a pointer to the transcript and cleans up |
 
