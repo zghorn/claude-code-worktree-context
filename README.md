@@ -23,7 +23,11 @@ or branch you're in.
   wiped, Claude is prompted to save its working notes to disk. The next
   session reads them back in.
 - **Works for the whole team.** Send a teammate this repo; one command
-  installs it on their laptop with the same setup.
+  installs it on their laptop. Pairing on the same branch? Sync the
+  matching `~/worktrees/contexts/<repo>/<worktree>/` directory between
+  your machines (Dropbox, iCloud Drive, syncthing — anything that mirrors
+  files) and you'll share the same handoff. Claude on one laptop picks
+  up where Claude on the other left off.
 
 ## Install
 
