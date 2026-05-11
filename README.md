@@ -48,11 +48,21 @@ rm -rf ~/worktrees/contexts   # optional: also wipe accumulated handoffs
 
 ## How it works
 
-Five hooks run across the Claude Code lifecycle:
+### The hook system
 
-- **Load** (`SessionStart`, `PostToolUse`, `UserPromptSubmit`) — pull the worktree's handoff into Claude's context, at session start and when mid-session activity touches a new worktree.
-- **Log** (`PostToolUse`) — append every relevant tool call to `activity.jsonl`.
-- **Save** (`PreCompact`, `SessionEnd`) — prompt Claude to write the handoff before context is lost, and record a transcript pointer for the next session.
+Claude Code lets you register shell commands against lifecycle events: `SessionStart`, `PostToolUse`, `UserPromptSubmit`, `PreCompact`, and `SessionEnd`. When an event fires, Claude Code spawns the command synchronously, pipes a JSON payload (`session_id`, `cwd`, `tool_name`, …) to its stdin, and reads its stdout. If the stdout is JSON containing `hookSpecificOutput.additionalContext`, that string is injected into Claude's context as a `<system-reminder>` — visible to Claude without any tool call.
+
+### What this project registers
+
+Five hooks that use both channels (disk side-effect, and `additionalContext` injection):
+
+- **`SessionStart`** — reads the worktree's `handoff.md` and injects it so Claude opens with the prior session's notes already in context.
+- **`PostToolUse`** — appends every relevant tool call to `activity.jsonl`, and injects the handoff inline the first time Claude touches a worktree this session.
+- **`UserPromptSubmit`** — fallback injector for any worktree whose handoff hasn't been delivered yet.
+- **`PreCompact`** — injects a sentinel prompting Claude to flush fresh handoffs before context is wiped.
+- **`SessionEnd`** — writes a `session-meta.json` pointer so the next session can locate the prior transcript.
+
+Each injected payload starts with a marker like `<<<WORKTREE_HANDOFF_LOADED>>>`. The installed SKILL.md teaches Claude how to react when it sees one. The marker is the wire format; the skill is the handler.
 
 Handoffs live at `~/worktrees/contexts/<repo>/<worktree>/handoff.md`. Override the root with `WORKTREE_HANDOFF_ROOT` if your worktrees are stored elsewhere.
 
