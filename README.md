@@ -1,12 +1,24 @@
 # Persistent per-worktree context for Claude Code
 
-Claude resumes the previous session's context every time it works in a worktree.
+Claude resumes the previous session's working memory every time it works in a worktree.
 
 ## What it does
 
 - Each worktree has its own context directory: `handoff.md` plus session metadata, activity logs, and per-session sentinels.
 - Claude reads the worktree's handoff at session start, and again whenever mid-session activity touches a new worktree.
 - Claude writes the worktree's handoff at natural stopping points and immediately before `/compact`.
+
+## What's in a handoff
+
+`handoff.md` has three working-memory sections plus operational scaffolding:
+
+- **Open threads** — unresolved questions and pending decisions.
+- **Working agreements (verbatim)** — direct quotes of user feedback and corrections, kept as quotes so intent doesn't drift through paraphrasing.
+- **Verified codebase facts** — discoveries with `path:line` citations; the citation is the staleness check.
+
+Plus: where we left off, active work, open PRs/JIRA, key files. See `worktree-handoff/assets/handoff-template.md` for the full template.
+
+Bar for inclusion across the three working-memory sections: hard-won, worktree-specific, likely to recur.
 
 ## Install
 

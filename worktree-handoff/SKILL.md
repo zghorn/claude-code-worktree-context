@@ -102,17 +102,28 @@ You don't need to announce every update. A single-line note like "Updating hando
 
 ### What to include
 
-The handoff is *for the next Claude* — optimize for someone picking up cold, not for a human reader. Five sections, in this order:
+The handoff is *for the next Claude* — optimize for someone picking up cold, not for a human reader. Sections, in this order:
 
 1. **Where we left off** — 2–4 sentences of framing. What problem are we solving, what's the current state.
-2. **Active work** — concrete threads in flight. Checkboxes are fine. Keep it specific (file paths, function names, test names).
-3. **Open PRs and JIRA** — snapshot at write time. Use `gh pr list --head "$(git branch --show-current)"` for PRs; parse the branch name or recent commits for JIRA keys (e.g., `PAYPROF-1534`). Record status (draft/open/in review/merged).
-4. **Key files** — the 5–15 files most relevant to the current thread, each with a one-line note on *why* it matters. Not a file tree — a curated map.
-5. **Next steps / open questions** — what the next session should pick up, and anything undecided.
+2. **Open threads** — unresolved questions, decisions floated but not landed, "should we X or Y" calls still pending. This is the section a future session reads *before* acting. Each entry is a question or pending decision, not a task in flight.
+3. **Working agreements (verbatim)** — direct quotes from prior sessions where the user gave feedback, made a correction, or set an expectation. Keep them as quotes ("don't squash these PRs") rather than paraphrased rules ("user prefers separate PRs") — paraphrasing drifts and loses intent. Date each one. Add a one-line "Applied to:" if relevant.
+4. **Active work** — concrete threads in flight. Checkboxes are fine. Keep it specific (file paths, function names, test names).
+5. **Open PRs and JIRA** — snapshot at write time. Use `gh pr list --head "$(git branch --show-current)"` for PRs; parse the branch name or recent commits for JIRA keys (e.g., `PAYPROF-1534`). Record status (draft/open/in review/merged).
+6. **Verified codebase facts** — facts discovered during this worktree's prior work, with `path:line` citations. **Bar to include:** specific to this worktree's work, took non-trivial discovery to land (not obvious from a filename or CLAUDE.md), and likely to come up again. Every entry must carry a citation so the next session can verify the fact is still true before relying on it — code drifts, cached facts go stale.
+7. **Key files** — the 5–15 files most relevant to the current thread, each with a one-line note on *why* it matters. Not a file tree — a curated map.
 
-Optionally, a **Notes** section for gotchas, decisions, and dead-ends (so the next session doesn't re-walk them).
+Optionally, a **Notes** section for gotchas, dead-ends, and approaches that didn't work (so the next session doesn't re-walk them).
 
-See `assets/handoff-template.md` for the exact structure.
+Sections may be omitted entirely when empty — a thin handoff for a new worktree is fine. Don't pad. See `assets/handoff-template.md` for the structure.
+
+### How these sections relate
+
+- **Open threads** answers "what's unresolved?" — read it first.
+- **Working agreements** answers "how should I approach things here?" — informs your behavior, not your briefing.
+- **Active work** answers "what's mid-flight?" — concrete tasks, not decisions.
+- **Verified codebase facts** answers "what do I already know about this code?" — reference, not narrative.
+
+Open threads ≠ Active work: a thread is unresolved; active work is in motion. A question waiting for the user is an open thread; a refactor in flight is active work.
 
 ### Snapshotting PRs and JIRA
 
@@ -136,6 +147,10 @@ If JIRA keys are found, include them; don't fetch from JIRA unless the user spec
 - **Don't try to "auto-resume" by replaying the prior transcript.** The transcript file is there for targeted lookups, not for re-loading. Trust the handoff for the briefing.
 - **Don't write the handoff on session start unless you'd have something genuinely new to add.** The hook already loaded the existing file; re-writing it with less detail is worse than leaving it alone.
 - **Don't skip the briefing just because the work in this session turned out to be unrelated.** Acknowledge what you loaded and pivot — "I see we were in the middle of X; it sounds like you want to work on Y now — let me know if you want me to update the handoff for X before we switch."
+- **Don't paraphrase Working agreements.** A summary like "user prefers small PRs" loses the texture and the *why*. Keep the direct quote and let the next session interpret it. If a corollary is needed, add it as a separate "Applied to:" line below the quote.
+- **Don't recite Working agreements in the briefing.** They inform *how* you respond, not *what* to brief. Pulling them into the opening monologue makes the handoff feel like a contract.
+- **Don't act on a Verified codebase fact without checking its citation.** Code drifts. The citation is the staleness check — read the line before relying on the fact, and update or remove the entry if it no longer holds.
+- **Don't let Verified codebase facts or Working agreements become a dumping ground.** Apply the bar: hard-won, worktree-specific, likely to recur. Trivia and one-shot observations don't belong.
 
 ## Files this skill owns
 
