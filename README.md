@@ -18,6 +18,14 @@ cd worktree-handoff
 bash install.sh
 ```
 
+Or install from a tarball if you don't want a git clone:
+
+```bash
+curl -L https://github.com/zghorn/worktree-handoff/archive/refs/heads/main.tar.gz | tar xz
+cd worktree-handoff-main
+bash install.sh
+```
+
 Requires `jq` (`brew install jq`) and Claude Code.
 
 Verify the hooks are registered:
