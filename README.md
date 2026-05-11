@@ -1,6 +1,6 @@
 # Persistent per-worktree context for Claude Code
 
-Five Claude Code hooks maintain a `handoff.md` file per git worktree. When a new session starts in that worktree, the handoff is loaded into Claude's initial context.
+A new session in a worktree starts with the previous session's context already loaded.
 
 ## What it does
 
