@@ -25,7 +25,7 @@ command -v jq >/dev/null 2>&1 || exit 0
 session_id="$(printf '%s' "$input" | jq -r '.session_id // empty' 2>/dev/null)"
 [[ -z "$session_id" ]] && exit 0
 
-ctx_root="${WORKTREE_CONTEXT_ROOT:-$HOME/worktrees/contexts}"
+ctx_root="${WORKTREE_HANDOFF_ROOT:-$HOME/worktrees/contexts}"
 [[ ! -d "$ctx_root" ]] && exit 0
 
 # Find every context dir that has a touched-sentinel for this session AND
@@ -42,7 +42,7 @@ done < <(find "$ctx_root" -maxdepth 4 -type f -name ".touched-$session_id" -prin
 
 # Build payload.
 payload=""
-payload+="<<<WORKTREE_CONTEXT_AUTOLOAD>>>"$'\n\n'
+payload+="<<<WORKTREE_HANDOFF_AUTOLOAD>>>"$'\n\n'
 if [[ ${#to_inject[@]} -eq 1 ]]; then
   payload+="Your tool calls touched a git worktree that wasn't already loaded as context. Treat the handoff below as your working notes for that worktree, and keep \`handoff.md\` updated as you continue work there."$'\n\n'
 else
@@ -69,7 +69,7 @@ for ctx_dir in "${to_inject[@]}"; do
     payload+="**Handoff:**"$'\n\n'
     payload+="$(cat "$handoff_file")"$'\n\n'
   else
-    payload+="_No \`handoff.md\` exists for this worktree yet. Create one at \`$handoff_file\` if you continue work here. Use the template at \`~/.claude/skills/worktree-context/assets/handoff-template.md\`._"$'\n\n'
+    payload+="_No \`handoff.md\` exists for this worktree yet. Create one at \`$handoff_file\` if you continue work here. Use the template at \`~/.claude/skills/worktree-handoff/assets/handoff-template.md\`._"$'\n\n'
   fi
 
   # Mark delivered so we don't re-inject next turn.

@@ -91,7 +91,7 @@ if [[ ! -f "$delivered" ]]; then
   meta_file="$context_dir/session-meta.json"
 
   payload=""
-  payload+="<<<WORKTREE_CONTEXT_AUTOLOAD>>>"$'\n\n'
+  payload+="<<<WORKTREE_HANDOFF_AUTOLOAD>>>"$'\n\n'
   payload+="Your tool call just touched a git worktree that wasn't already loaded as context. Treat the handoff below as your working notes for that worktree, and keep \`handoff.md\` updated as you continue work there."$'\n\n'
   payload+="### Worktree: \`$repo_name/$wt_name\`"$'\n\n'
   payload+="**Context directory:** \`$context_dir\`"$'\n\n'

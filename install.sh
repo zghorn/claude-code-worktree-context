@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# One-command installer for the worktree-context skill.
+# One-command installer for the worktree-handoff skill.
 #
-# Copies the skill into ~/.claude/skills/worktree-context/ (creating a
+# Copies the skill into ~/.claude/skills/worktree-handoff/ (creating a
 # timestamped backup outside the skills dir if one already exists), then
 # registers the hook entries in ~/.claude/settings.json via the skill's
 # own installer.
@@ -14,8 +14,8 @@
 set -euo pipefail
 
 PKG_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SRC="$PKG_DIR/worktree-context"
-DEST="$HOME/.claude/skills/worktree-context"
+SRC="$PKG_DIR/worktree-handoff"
+DEST="$HOME/.claude/skills/worktree-handoff"
 BACKUP_ROOT="$HOME/.claude/skills-backups"
 
 if [[ ! -d "$SRC" ]]; then
@@ -36,7 +36,7 @@ mkdir -p "$HOME/.claude/skills"
 
 if [[ -d "$DEST" ]]; then
   mkdir -p "$BACKUP_ROOT"
-  backup="$BACKUP_ROOT/worktree-context.$(date -u +%Y%m%dT%H%M%SZ)"
+  backup="$BACKUP_ROOT/worktree-handoff.$(date -u +%Y%m%dT%H%M%SZ)"
   echo "Existing skill found — backing up to $backup"
   mv "$DEST" "$backup"
 fi

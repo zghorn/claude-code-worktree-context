@@ -57,7 +57,7 @@ fi
 # Build the additionalContext payload. Use a clear marker so the skill can
 # recognize it and trigger the "where we left off" behavior.
 payload=""
-payload+="<<<WORKTREE_CONTEXT_LOADED>>>"$'\n\n'
+payload+="<<<WORKTREE_HANDOFF_LOADED>>>"$'\n\n'
 payload+="A prior Claude session worked in this git worktree. Use the information below to brief the user on where you left off, then proceed."$'\n\n'
 payload+="**Context directory:** \`$context_dir\`"$'\n\n'
 

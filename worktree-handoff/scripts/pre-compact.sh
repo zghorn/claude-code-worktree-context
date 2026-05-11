@@ -22,7 +22,7 @@ command -v jq >/dev/null 2>&1 || exit 0
 session_id="$(printf '%s' "$input" | jq -r '.session_id // empty' 2>/dev/null)"
 [[ -z "$session_id" ]] && exit 0
 
-ctx_root="${WORKTREE_CONTEXT_ROOT:-$HOME/worktrees/contexts}"
+ctx_root="${WORKTREE_HANDOFF_ROOT:-$HOME/worktrees/contexts}"
 [[ ! -d "$ctx_root" ]] && exit 0
 
 active=()
@@ -34,7 +34,7 @@ done < <(find "$ctx_root" -maxdepth 4 -type f -name ".touched-$session_id" -prin
 [[ ${#active[@]} -eq 0 ]] && exit 0
 
 payload=""
-payload+="<<<WORKTREE_CONTEXT_PRECOMPACT>>>"$'\n\n'
+payload+="<<<WORKTREE_HANDOFF_PRECOMPACT>>>"$'\n\n'
 payload+="**Compaction is about to wipe your working memory.** Before it runs, update \`handoff.md\` in each of these worktrees so the next session can resume:"$'\n\n'
 
 for ctx_dir in "${active[@]}"; do
@@ -46,7 +46,7 @@ for ctx_dir in "${active[@]}"; do
   payload+="- \`$handoff_file\` _(worktree: $repo_name/$wt_name; $status)_"$'\n'
 done
 payload+=$'\n'
-payload+="Read each existing \`handoff.md\` first and merge forward — don't overwrite with less detail. Use the template at \`~/.claude/skills/worktree-context/assets/handoff-template.md\` for any new file. Optimize each handoff for the *next* Claude session that opens that worktree, not for a human reader."$'\n'
+payload+="Read each existing \`handoff.md\` first and merge forward — don't overwrite with less detail. Use the template at \`~/.claude/skills/worktree-handoff/assets/handoff-template.md\` for any new file. Optimize each handoff for the *next* Claude session that opens that worktree, not for a human reader."$'\n'
 
 jq -n \
   --arg ctx "$payload" \

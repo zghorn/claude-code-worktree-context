@@ -32,8 +32,8 @@ or branch you're in.
 ## Install
 
 ```bash
-git clone https://github.com/zghorn/claude-code-worktree-context.git
-cd claude-code-worktree-context
+git clone https://github.com/zghorn/worktree-handoff.git
+cd worktree-handoff
 bash install.sh
 ```
 
@@ -49,7 +49,7 @@ jq '.hooks | keys' ~/.claude/settings.json
 To update later:
 
 ```bash
-cd claude-code-worktree-context
+cd worktree-handoff
 git pull
 bash install.sh
 ```
@@ -61,10 +61,10 @@ before making changes.
 To remove:
 
 ```bash
-rm -rf ~/.claude/skills/worktree-context
+rm -rf ~/.claude/skills/worktree-handoff
 cp ~/.claude/settings.json ~/.claude/settings.json.bak.$(date -u +%Y%m%dT%H%M%SZ)
 jq '.hooks |= with_entries(
-      .value |= map(select(.hooks // [] | all(.command | test("worktree-context/scripts/") | not)))
+      .value |= map(select(.hooks // [] | all(.command | test("worktree-handoff/scripts/") | not)))
     )' ~/.claude/settings.json > /tmp/s.json && mv /tmp/s.json ~/.claude/settings.json
 rm -rf ~/worktrees/contexts   # optional: wipe accumulated per-worktree notes
 ```
@@ -83,7 +83,7 @@ Five small shell scripts run at key moments in Claude's lifecycle:
 
 Notes live at `~/worktrees/contexts/<repo>/<worktree>/handoff.md` — one
 file per worktree, written by Claude, read by the next Claude. Override
-the location with `WORKTREE_CONTEXT_ROOT` if you keep your worktrees
+the location with `WORKTREE_HANDOFF_ROOT` if you keep your worktrees
 somewhere else.
 
 ### Why shell scripts and not "just ask Claude to remember"?
@@ -97,10 +97,10 @@ the host's hands; the skill prose is Claude's brain. They collaborate.
 ## What's in the repo
 
 ```
-claude-code-worktree-context/
+worktree-handoff/
 ├── README.md            ← this file
 ├── install.sh           ← one-command installer
-└── worktree-context/    ← skill payload (copied to ~/.claude/skills/)
+└── worktree-handoff/    ← skill payload (copied to ~/.claude/skills/)
     ├── SKILL.md
     ├── assets/handoff-template.md
     ├── evals/evals.json

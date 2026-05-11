@@ -1,18 +1,18 @@
 ---
-name: worktree-context
-description: Persist and resume Claude context per git worktree, automatically — across context switches within a single session. Use whenever you see any of `<<<WORKTREE_CONTEXT_LOADED>>>` (SessionStart loaded a prior handoff), `<<<WORKTREE_CONTEXT_AUTOLOAD>>>` (your tool calls just touched a worktree mid-session — its handoff has been auto-injected), or `<<<WORKTREE_CONTEXT_PRECOMPACT>>>` (compaction is imminent — flush every active worktree's handoff before context wipes). Also use whenever the user is actively working in a git worktree and you should be maintaining the on-disk handoff — update it at natural stopping points, after a PR is opened, or whenever the user signals they're wrapping up. Use even if the user hasn't mentioned "handoff" or "context" explicitly — this is a background responsibility for the whole session whenever a worktree context directory exists at `~/worktrees/contexts/<repo>/<worktree>/`. Multiple worktrees may be active in a single session; maintain a separate `handoff.md` per worktree.
+name: worktree-handoff
+description: Persist and resume Claude context per git worktree, automatically — across context switches within a single session. Use whenever you see any of `<<<WORKTREE_HANDOFF_LOADED>>>` (SessionStart loaded a prior handoff), `<<<WORKTREE_HANDOFF_AUTOLOAD>>>` (your tool calls just touched a worktree mid-session — its handoff has been auto-injected), or `<<<WORKTREE_HANDOFF_PRECOMPACT>>>` (compaction is imminent — flush every active worktree's handoff before context wipes). Also use whenever the user is actively working in a git worktree and you should be maintaining the on-disk handoff — update it at natural stopping points, after a PR is opened, or whenever the user signals they're wrapping up. Use even if the user hasn't mentioned "handoff" or "context" explicitly — this is a background responsibility for the whole session whenever a worktree context directory exists at `~/worktrees/contexts/<repo>/<worktree>/`. Multiple worktrees may be active in a single session; maintain a separate `handoff.md` per worktree.
 ---
 
-# Worktree Context
+# Worktree Handoff
 
 This skill gives Claude a persistent per-worktree notebook so a new session in the same worktree can pick up where the last one left off — even when the transcript itself has been compacted away. The context system also tracks worktree activity *within* a session, so a single Claude session that spans multiple worktrees keeps each one's handoff fresh independently.
 
 Five hooks work together so you don't have to think about which directory you're in:
 
-- **SessionStart** — on a new session inside a worktree, loads that worktree's existing handoff into your opening context. Marker: `<<<WORKTREE_CONTEXT_LOADED>>>`.
+- **SessionStart** — on a new session inside a worktree, loads that worktree's existing handoff into your opening context. Marker: `<<<WORKTREE_HANDOFF_LOADED>>>`.
 - **PostToolUse** — silent. Whenever you Edit/Write/Read/Bash/Grep/Glob a path inside a git worktree, appends a line to that worktree's `activity.jsonl` and marks a per-session sentinel.
-- **UserPromptSubmit** — when you've just touched a worktree whose handoff isn't already loaded, injects that worktree's handoff at the start of the next user turn. Marker: `<<<WORKTREE_CONTEXT_AUTOLOAD>>>`.
-- **PreCompact** — fires before context compaction. Lists every worktree this session has touched and tells you to flush their handoffs *before* compaction wipes your memory. Marker: `<<<WORKTREE_CONTEXT_PRECOMPACT>>>`.
+- **UserPromptSubmit** — when you've just touched a worktree whose handoff isn't already loaded, injects that worktree's handoff at the start of the next user turn. Marker: `<<<WORKTREE_HANDOFF_AUTOLOAD>>>`.
+- **PreCompact** — fires before context compaction. Lists every worktree this session has touched and tells you to flush their handoffs *before* compaction wipes your memory. Marker: `<<<WORKTREE_HANDOFF_PRECOMPACT>>>`.
 - **SessionEnd** — writes `session-meta.json` so the next session can find this session's transcript, and cleans up per-session sentinels.
 
 Your job when this skill applies is two-sided:
@@ -24,11 +24,11 @@ Both sides are equally important. A skill that reads context but never writes it
 
 ## When this skill applies
 
-**On `<<<WORKTREE_CONTEXT_LOADED>>>` (SessionStart)** — A prior session worked in the worktree you're starting in. Do the "arrival" behavior below.
+**On `<<<WORKTREE_HANDOFF_LOADED>>>` (SessionStart)** — A prior session worked in the worktree you're starting in. Do the "arrival" behavior below.
 
-**On `<<<WORKTREE_CONTEXT_AUTOLOAD>>>` (mid-session, after touching a new worktree)** — Treat the handoff(s) in the payload as loaded context for the named worktree(s). Do *not* break flow to brief the user unless they ask — the user's expectation is silent context retention. Just incorporate the handoff into your understanding and update it as you continue working there.
+**On `<<<WORKTREE_HANDOFF_AUTOLOAD>>>` (mid-session, after touching a new worktree)** — Treat the handoff(s) in the payload as loaded context for the named worktree(s). Do *not* break flow to brief the user unless they ask — the user's expectation is silent context retention. Just incorporate the handoff into your understanding and update it as you continue working there.
 
-**On `<<<WORKTREE_CONTEXT_PRECOMPACT>>>` (just before `/compact`)** — Stop and flush. Read each existing `handoff.md` listed, merge in everything new since it was last written, and save before compaction proceeds. This is the single highest-leverage update of the session.
+**On `<<<WORKTREE_HANDOFF_PRECOMPACT>>>` (just before `/compact`)** — Stop and flush. Read each existing `handoff.md` listed, merge in everything new since it was last written, and save before compaction proceeds. This is the single highest-leverage update of the session.
 
 **During any session in a worktree** — If the current working directory is inside a git worktree, there is a context directory for it at `~/worktrees/contexts/<main-repo-name>/<worktree-name>/`. Maintain `handoff.md` in that directory throughout the session. You do not need the hook to have loaded anything to start writing — the first session in a new worktree should create and populate the file.
 
@@ -51,13 +51,13 @@ CTX_DIR="$HOME/worktrees/contexts/$(basename "$MAIN_WT")/$(basename "$CURRENT_WT
 A single Claude session may touch several worktrees — for example, you start in the main repo, `cd` into worktree A to investigate, then run a command that edits worktree B. The hooks make this transparent:
 
 - Each worktree gets its own context dir, its own `handoff.md`, and its own `activity.jsonl`. They are never merged.
-- The first time your tool calls touch a worktree this session, the next user turn will receive a `<<<WORKTREE_CONTEXT_AUTOLOAD>>>` block with that worktree's handoff. After that, no further auto-injection happens for that worktree this session.
+- The first time your tool calls touch a worktree this session, the next user turn will receive a `<<<WORKTREE_HANDOFF_AUTOLOAD>>>` block with that worktree's handoff. After that, no further auto-injection happens for that worktree this session.
 - When updating handoffs, scope each one to *that worktree's* work. Don't dump global session context into one worktree's handoff just because that's where you happened to look first.
 - The user does **not** need to tell you which directory or branch you're in. The hooks track it. Your job is to keep each handoff faithful to the work that happened in its worktree.
 
 ## Arrival behavior: "where we left off"
 
-When you see `<<<WORKTREE_CONTEXT_LOADED>>>` in your initial context, your **first response to the user** must lead with a short "where we left off" briefing. Keep it to 3–6 sentences. Cover:
+When you see `<<<WORKTREE_HANDOFF_LOADED>>>` in your initial context, your **first response to the user** must lead with a short "where we left off" briefing. Keep it to 3–6 sentences. Cover:
 
 1. What was being worked on (one sentence of framing).
 2. The most important open threads — the 1–3 things the user is likely to want to pick up next.

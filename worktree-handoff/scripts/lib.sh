@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Shared helpers for worktree-context hooks.
+# Shared helpers for worktree-handoff hooks.
 # Sourced by session-start.sh and session-end.sh.
 
 set -euo pipefail
 
 # Root where per-worktree context is persisted.
-WORKTREE_CONTEXT_ROOT="${WORKTREE_CONTEXT_ROOT:-$HOME/worktrees/contexts}"
+WORKTREE_HANDOFF_ROOT="${WORKTREE_HANDOFF_ROOT:-$HOME/worktrees/contexts}"
 
 # Resolve the main worktree path for a given directory.
 # Prints absolute path of the main worktree, or empty if not in a git repo.
@@ -35,7 +35,7 @@ resolve_context_dir() {
   fi
   repo_name="$(basename "$main_wt")"
   wt_name="$(basename "$current_wt")"
-  printf '%s/%s/%s\n' "$WORKTREE_CONTEXT_ROOT" "$repo_name" "$wt_name"
+  printf '%s/%s/%s\n' "$WORKTREE_HANDOFF_ROOT" "$repo_name" "$wt_name"
 }
 
 # Current branch name (or empty for detached HEAD / non-repo).

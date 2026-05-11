@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Idempotently register worktree-context hooks in ~/.claude/settings.json.
+# Idempotently register worktree-handoff hooks in ~/.claude/settings.json.
 # Safe to run multiple times — it will not duplicate existing hook entries
 # that point to this skill's scripts.
 #
@@ -11,7 +11,7 @@
 #   PreCompact        (manual|auto)            -> pre-compact.sh
 #
 # Usage:
-#   bash ~/.claude/skills/worktree-context/scripts/install-hooks.sh
+#   bash ~/.claude/skills/worktree-handoff/scripts/install-hooks.sh
 
 set -euo pipefail
 
@@ -92,7 +92,7 @@ jq \
 
 mv "$tmp" "$SETTINGS"
 
-echo "Installed worktree-context hooks into $SETTINGS"
+echo "Installed worktree-handoff hooks into $SETTINGS"
 echo "Backup saved to $backup"
 echo
 echo "Hooks registered:"

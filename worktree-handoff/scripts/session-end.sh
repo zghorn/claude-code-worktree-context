@@ -83,7 +83,7 @@ printf '%s\n' "$(cat "$meta_file")" >> "$history_file"
 # UserPromptSubmit hooks for this session, across every worktree this
 # session touched. Leftover sentinels are harmless (the session_id will
 # never match again), but cleanup keeps the context dirs tidy.
-ctx_root="${WORKTREE_CONTEXT_ROOT:-$HOME/worktrees/contexts}"
+ctx_root="${WORKTREE_HANDOFF_ROOT:-$HOME/worktrees/contexts}"
 if [[ -n "$session_id" && -d "$ctx_root" ]]; then
   find "$ctx_root" -maxdepth 4 -type f \
     \( -name ".touched-$session_id" -o -name ".delivered-$session_id" \) \
