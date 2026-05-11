@@ -1,14 +1,12 @@
 # Persistent per-worktree context for Claude Code
 
-A new session in a worktree starts with the previous session's context already loaded.
+Claude resumes the previous session's context every time it works in a worktree.
 
 ## What it does
 
-- On session start, loads the worktree's `handoff.md` into Claude's initial context.
-- On mid-session activity in a different worktree, injects that worktree's `handoff.md` so context follows directory changes.
-- Before `/compact`, prompts Claude to flush an updated `handoff.md` for each worktree touched this session.
-
-Each worktree has its own context directory; they are never merged.
+- Each worktree has its own context directory: `handoff.md` plus session metadata, activity logs, and per-session sentinels.
+- Claude reads the worktree's handoff at session start, and again whenever mid-session activity touches a new worktree.
+- Claude writes the worktree's handoff at natural stopping points and immediately before `/compact`.
 
 ## Install
 
@@ -50,15 +48,11 @@ rm -rf ~/worktrees/contexts   # optional: also wipe accumulated handoffs
 
 ## How it works
 
-Five shell scripts wire into Claude Code's hook system:
+Five hooks run across the Claude Code lifecycle:
 
-| Hook | Trigger | Action |
-|---|---|---|
-| `SessionStart` | New session opened in a worktree | Loads that worktree's `handoff.md` and `session-meta.json` into Claude's initial context. |
-| `PostToolUse` | `Edit`, `Write`, `Read`, `Bash`, `Grep`, `Glob`, or `NotebookEdit` on a path in a worktree | Appends a row to `activity.jsonl`. On first touch of a worktree this session, injects that worktree's handoff inline. |
-| `UserPromptSubmit` | Each user turn | Fallback path: if `PostToolUse` didn't deliver, injects pending handoffs at the start of the next turn. |
-| `PreCompact` | Just before `/compact` | Lists every worktree touched this session and prompts Claude to write or update each one's `handoff.md`. |
-| `SessionEnd` | Session terminates | Writes `session-meta.json` (transcript path, branch, cwd, end timestamp) so the next session can locate the prior transcript. |
+- **Load** (`SessionStart`, `PostToolUse`, `UserPromptSubmit`) — pull the worktree's handoff into Claude's context, at session start and when mid-session activity touches a new worktree.
+- **Log** (`PostToolUse`) — append every relevant tool call to `activity.jsonl`.
+- **Save** (`PreCompact`, `SessionEnd`) — prompt Claude to write the handoff before context is lost, and record a transcript pointer for the next session.
 
 Handoffs live at `~/worktrees/contexts/<repo>/<worktree>/handoff.md`. Override the root with `WORKTREE_HANDOFF_ROOT` if your worktrees are stored elsewhere.
 
