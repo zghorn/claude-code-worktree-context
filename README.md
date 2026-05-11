@@ -1,10 +1,4 @@
-# Never lose context between Claude sessions
-
-Install this once and Claude will remember what it was doing in every git
-worktree on your machine — across restarts, across compactions, across
-weeks. No more copy-pasting session IDs to resume work. No more
-re-explaining where you left off. No more thinking about which directory
-or branch you're in.
+# Persistent per-worktree context for Claude Code
 
 ## What changes for you
 
